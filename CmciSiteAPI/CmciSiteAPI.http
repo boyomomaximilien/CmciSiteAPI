@@ -1,0 +1,6 @@
+@CmciSiteAPI_HostAddress = http://localhost:5001
+
+GET {{CmciSiteAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
