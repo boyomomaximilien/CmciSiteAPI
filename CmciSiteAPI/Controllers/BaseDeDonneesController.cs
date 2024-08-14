@@ -96,7 +96,12 @@ namespace CmciSiteAPI.Controllers
             var admin = await Contextdb.administrateurs.FindAsync(id);
             if(admin != null)
             {
-                var token = CreateToken(admin);
+                Admindb monAdmin = new();
+                monAdmin.Id = admin.Id;
+                monAdmin.Name = BCrypt.Net.BCrypt.HashPassword(admin.Name);
+                monAdmin.Pwd = BCrypt.Net.BCrypt.HashPassword(admin.Name-20); 
+
+                string token = CreateToken(monAdmin);
                 return Ok(admin);
 
             }
@@ -146,15 +151,15 @@ namespace CmciSiteAPI.Controllers
         {
             var nom = $"{admin.Name}";
 
-            List<Claim> claims = new List<Claim> {
+            List<Claim> myClaims = new List<Claim> {
                 new Claim(ClaimTypes.Name, nom )
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes( "special cle token"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value!));
 
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
-            var token = new JwtSecurityToken(claims : claims, expires: DateTime.Now.AddDays(2), signingCredentials : cred);
+            var token = new JwtSecurityToken(claims : myClaims, expires: DateTime.Now.AddDays(2), signingCredentials : cred);
 
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
