@@ -11,7 +11,6 @@ using System.Text;
 
 namespace CmciSiteAPI.Controllers
 {
-    [Authorize] 
     [Route("api/[controller]")]
     [ApiController]
     public class BaseDeDonneesController : ControllerBase
@@ -47,7 +46,7 @@ namespace CmciSiteAPI.Controllers
             return Ok(book);
         }
 
-        [HttpPut("cmciebolowa/books")]
+        [HttpPut("cmciebolowa/books"),Authorize]
         public async Task<ActionResult<Booksdb>> ModifiererBooks(Booksdb book)
         {
             var oldValue = await Contextdb.Books.FindAsync(book.Id);
@@ -97,13 +96,14 @@ namespace CmciSiteAPI.Controllers
             var admin = await Contextdb.administrateurs.FindAsync(id);
             if(admin != null)
             {
-                return Ok(admin);
+                string monToken = CreateToken(admin);
+                return Ok(monToken);
 
             }
             return NotFound();
         }
 
-        [HttpPut("cmciebolowa/administrateurs")]
+        [HttpPut("cmciebolowa/administrateur")]
         public async Task<ActionResult<Booksdb>> ModifiererAdmin(Admindb admin)
         {
             var oldValue = await Contextdb.administrateurs.FindAsync(admin.Id);
@@ -126,7 +126,7 @@ namespace CmciSiteAPI.Controllers
 
         }
 
-        [HttpDelete("cmciebolowa/administrateurs")]
+        [HttpDelete("cmciebolowa/administrateur")]
         public async Task<ActionResult<Admindb>> DeleteAdmin(int Id)
         {
             var admin = await Contextdb.administrateurs.FindAsync(Id);
@@ -142,6 +142,24 @@ namespace CmciSiteAPI.Controllers
 
         //-------------------------- Creer le token  --------------------------------
 
+        private string CreateToken(Admindb admin)
+        {
+            var nom = $"{admin.Name}";
+
+            List<Claim> myClaims = new List<Claim> {
+                new Claim(ClaimTypes.Name, nom )
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value!));
+
+            var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(claims: myClaims, expires: DateTime.Now.AddDays(2), signingCredentials: cred);
+
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return jwt;
+        }
 
     }
 }
