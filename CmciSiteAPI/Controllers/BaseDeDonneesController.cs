@@ -127,9 +127,9 @@ namespace CmciSiteAPI.Controllers
         }
 
         [HttpDelete("cmciebolowa/administrateurs")]
-        public async Task<ActionResult<Admindb>> DeleteAdmin(int id)
+        public async Task<ActionResult<Admindb>> DeleteAdmin(int Id)
         {
-            var admin = await Contextdb.administrateurs.FindAsync(id);
+            var admin = await Contextdb.administrateurs.FindAsync(Id);
 
             if (admin == null)
                 return BadRequest("Le livre que vous essayez de modifier n'existe pas");
